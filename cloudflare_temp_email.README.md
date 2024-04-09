@@ -2,6 +2,24 @@
 
 ## [English](README_EN.md)
 
+[CHANGELOG](CHANGELOG)
+
+[Backend](https://temp-email-api.dreamhunter2333.xyz/)
+![](https://uptime.aks.awsl.icu/api/badge/10/status)
+![](https://uptime.aks.awsl.icu/api/badge/10/uptime)
+![](https://uptime.aks.awsl.icu/api/badge/10/ping)
+![](https://uptime.aks.awsl.icu/api/badge/10/avg-response)
+![](https://uptime.aks.awsl.icu/api/badge/10/cert-exp)
+![](https://uptime.aks.awsl.icu/api/badge/10/response)
+
+[Frontend](https://temp-email.dreamhunter2333.xyz/)
+![](https://uptime.aks.awsl.icu/api/badge/12/status)
+![](https://uptime.aks.awsl.icu/api/badge/12/uptime)
+![](https://uptime.aks.awsl.icu/api/badge/12/ping)
+![](https://uptime.aks.awsl.icu/api/badge/12/avg-response)
+![](https://uptime.aks.awsl.icu/api/badge/12/cert-exp)
+![](https://uptime.aks.awsl.icu/api/badge/12/response)
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=dreamhunter2333/cloudflare_temp_email&type=Date&theme=dark" />
   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=dreamhunter2333/cloudflare_temp_email&type=Date" />
@@ -35,7 +53,8 @@
 - [x] 支持多语言
 - [x] 增加访问授权，可作为私人站点
 - [x] 增加自动回复功能
-- [ ] 免费版附件过大会造成 Exceeded CPU Limit 错误
+- [x] 增加查看附件功能
+- [x] 使用 rust wasm 解析邮件
 
 ---
 
@@ -80,6 +99,9 @@ git clone https://github.com/dreamhunter2333/cloudflare_temp_email.git
 # 创建 D1 并执行 schema.sql
 wrangler d1 create dev
 wrangler d1 execute dev --file=db/schema.sql
+# schema 更新，如果你在此日期之前初始化过数据库，可以执行此命令更新
+# wrangler d1 execute dev --file=db/2024-01-13-patch.sql
+# wrangler d1 execute dev --file=db/2024-04-03-patch.sql
 ```
 
 创建完成后，我们在 cloudflare 的控制台可以看到 D1 数据库
@@ -110,7 +132,7 @@ node_compat = true
 PREFIX = "tmp" # 要处理的邮箱名称前缀
 # 如果你想要你的网站私有，取消下面的注释，并修改密码
 # PASSWORDS = ["123", "456"]
-# admin 控制台密码
+# admin 控制台密码, 不配置则不允许访问控制台
 # ADMIN_PASSWORDS = ["123", "456"]
 DOMAINS = ["xxx.xxx1" , "xxx.xxx2"] # 你的域名
 JWT_SECRET = "xxx" # 用于生成 jwt 的密钥
@@ -140,8 +162,9 @@ pnpm run deploy
 
 ## Cloudflare Email Routing
 
-配置 `Cloudflare Email Routing` catch-all 发送到 `worker`
+配置对应域名的 `电子邮件 DNS 记录`
 
+配置 `Cloudflare Email Routing` catch-all 发送到 `worker`
 
 ![email](readme_assets/email.png)
 
