@@ -2,6 +2,29 @@
 
 ## [English](README_EN.md)
 
+## [CHANGELOG](CHANGELOG.md)
+
+## [在线演示](https://mail.awsl.uk/)
+
+[https://mail.awsl.uk](https://mail.awsl.uk/)
+或者 [https://temp-email.dreamhunter2333.xyz](https://temp-email.dreamhunter2333.xyz/)
+
+[Backend](https://temp-email-api.awsl.uk/)
+![](https://uptime.aks.awsl.icu/api/badge/10/status)
+![](https://uptime.aks.awsl.icu/api/badge/10/uptime)
+![](https://uptime.aks.awsl.icu/api/badge/10/ping)
+![](https://uptime.aks.awsl.icu/api/badge/10/avg-response)
+![](https://uptime.aks.awsl.icu/api/badge/10/cert-exp)
+![](https://uptime.aks.awsl.icu/api/badge/10/response)
+
+[Frontend](https://mail.awsl.uk/)
+![](https://uptime.aks.awsl.icu/api/badge/12/status)
+![](https://uptime.aks.awsl.icu/api/badge/12/uptime)
+![](https://uptime.aks.awsl.icu/api/badge/12/ping)
+![](https://uptime.aks.awsl.icu/api/badge/12/avg-response)
+![](https://uptime.aks.awsl.icu/api/badge/12/cert-exp)
+![](https://uptime.aks.awsl.icu/api/badge/12/response)
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=dreamhunter2333/cloudflare_temp_email&type=Date&theme=dark" />
   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=dreamhunter2333/cloudflare_temp_email&type=Date" />
@@ -10,6 +33,7 @@
 
 - [使用 cloudflare 免费服务，搭建临时邮箱](#使用-cloudflare-免费服务搭建临时邮箱)
   - [English](#english)
+  - [CHANGELOG](#changelog)
   - [在线演示](#在线演示)
   - [功能/TODO](#功能todo)
   - [什么是临时邮箱](#什么是临时邮箱)
@@ -20,9 +44,9 @@
   - [Cloudflare Workers 后端](#cloudflare-workers-后端-1)
   - [Cloudflare Email Routing](#cloudflare-email-routing)
   - [Cloudflare Pages 前端](#cloudflare-pages-前端)
+  - [配置发送邮件](#配置发送邮件)
   - [参考资料](#参考资料)
 
-## [在线演示](https://temp-email.dreamhunter2333.xyz/)
 
 ## 功能/TODO
 
@@ -35,7 +59,9 @@
 - [x] 支持多语言
 - [x] 增加访问授权，可作为私人站点
 - [x] 增加自动回复功能
-- [ ] 免费版附件过大会造成 Exceeded CPU Limit 错误
+- [x] 增加查看附件功能
+- [x] 使用 rust wasm 解析邮件
+- [x] 支持发送邮件
 
 ---
 
@@ -80,6 +106,9 @@ git clone https://github.com/dreamhunter2333/cloudflare_temp_email.git
 # 创建 D1 并执行 schema.sql
 wrangler d1 create dev
 wrangler d1 execute dev --file=db/schema.sql
+# schema 更新，如果你在此日期之前初始化过数据库，可以执行此命令更新
+# wrangler d1 execute dev --file=db/2024-01-13-patch.sql
+# wrangler d1 execute dev --file=db/2024-04-03-patch.sql
 ```
 
 创建完成后，我们在 cloudflare 的控制台可以看到 D1 数据库
@@ -110,7 +139,7 @@ node_compat = true
 PREFIX = "tmp" # 要处理的邮箱名称前缀
 # 如果你想要你的网站私有，取消下面的注释，并修改密码
 # PASSWORDS = ["123", "456"]
-# admin 控制台密码
+# admin 控制台密码, 不配置则不允许访问控制台
 # ADMIN_PASSWORDS = ["123", "456"]
 DOMAINS = ["xxx.xxx1" , "xxx.xxx2"] # 你的域名
 JWT_SECRET = "xxx" # 用于生成 jwt 的密钥
@@ -128,6 +157,8 @@ database_id = "xxx" # D1 数据库 ID
 
 部署
 
+第一次部署会提示创建项目, `production` 分支请填写 `production`
+
 ```bash
 pnpm run deploy
 ```
@@ -140,14 +171,19 @@ pnpm run deploy
 
 ## Cloudflare Email Routing
 
-配置 `Cloudflare Email Routing` catch-all 发送到 `worker`
+在将电子邮件地址绑定到您的 Worker 之前，您需要启用电子邮件路由并拥有至少一个经过验证的电子邮件地址。
 
+配置对应域名的 `电子邮件 DNS 记录`
+
+配置 `Cloudflare Email Routing` catch-all 发送到 `worker`
 
 ![email](readme_assets/email.png)
 
 ---
 
 ## Cloudflare Pages 前端
+
+第一次部署会提示创建项目, `production` 分支请填写 `production`
 
 ```bash
 cd frontend
@@ -166,6 +202,19 @@ pnpm run deploy
 ```
 
 ![pages](readme_assets/pages.png)
+
+## 配置发送邮件
+
+找到域名 `DNS` 记录的 `TXT` 的 `SPF` 记录, 增加 `include:relay.mailchannels.net`
+
+```bash
+v=spf1 include:_spf.mx.cloudflare.net include:relay.mailchannels.net ~all
+```
+
+新建 `_mailchannels` 记录, 类型为 `TXT`, 内容为 `v=mc1 cfid=你的worker域名`
+
+- 此处 worker 域名为后端 api 的域名，比如我部署在 `https://temp-email-api.awsl.uk/`，则填写 `v=mc1 cfid=awsl.uk`
+- 如果你的域名是 `https://temp-email-api.xxx.workers.dev`，则填写 `v=mc1 cfid=xxx.workers.dev`
 
 ## 参考资料
 
