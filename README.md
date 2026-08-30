@@ -1,3 +1,5 @@
+
+
 # 使用 cloudflare 免费服务，搭建临时邮箱
 
 ## [English](README_EN.md)
@@ -160,7 +162,7 @@ cp .env.example .env.local
 例如: `VITE_API_BASE=https://xxx.xxx.workers.dev`
 
 ```bash
-pnpm build --emptyOutDir
+pnpm build
 # 根据提示创建 pages
 pnpm run deploy
 ```
